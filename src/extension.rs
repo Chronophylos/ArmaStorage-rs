@@ -19,6 +19,7 @@ enum Function {
     Erase,
     Exists,
     GetFiles,
+    Dump,
 }
 
 pub fn ext(function: &str) -> (ErrorCodes, Value) {
@@ -78,6 +79,7 @@ pub fn ext_args(function: &str, args: Vec<&str>) -> (ErrorCodes, Value) {
 
 pub fn ext_args_std(function_name: &str, args: Vec<&str>) -> (ErrorCodes, Value) {
     let function = match function_name {
+        "dump" => Function::Dump,
         "open" => Function::Open,
         "close" => Function::Close,
         "read" => Function::Read,
@@ -95,7 +97,29 @@ pub fn ext_args_std(function_name: &str, args: Vec<&str>) -> (ErrorCodes, Value)
         }
     };
 
-    (ErrorCodes::Ok, Value::Void)
+    if args.is_empty() {
+        return (ErrorCodes::MissingArgument, Value::String("storage".into()));
+    }
+
+    //let storage: Value = args[0].parse();
+
+    match function {
+        Function::Dump => {
+            eprintln!("[Arma Storage] Dumping Data: {:#?}", args);
+            (ErrorCodes::Ok, Value::String(format!("{:#?}", args)))
+        }
+        Function::Open
+        | Function::ErrorCodes
+        | Function::Close
+        | Function::Read
+        | Function::Write
+        | Function::Set
+        | Function::Get
+        | Function::Erase
+        | Function::Exists
+        | Function::GetFiles => todo!(),
+        _ => unreachable!(),
+    }
 }
 
 pub fn ext_args_alt(data: &str, args: Vec<&str>) -> (ErrorCodes, Value) {
@@ -112,9 +136,8 @@ pub fn ext_args_alt(data: &str, args: Vec<&str>) -> (ErrorCodes, Value) {
         "write" => Function::Write,
         "get" => Function::Get,
         "set" => Function::Set,
-        "erase" | "eraseKey" => Function::Erase,
-        "exists" => Function::Exists,
-        "getFiles" | "storages" => Function::GetFiles,
+        "eraseKey" => Function::Erase,
+        "getFiles" => Function::GetFiles,
         _ => {
             return (
                 ErrorCodes::UnknownFunction,
@@ -177,7 +200,6 @@ pub fn ext_args_alt(data: &str, args: Vec<&str>) -> (ErrorCodes, Value) {
         Function::Get => todo!(),
         Function::Set => todo!(),
         Function::Erase => todo!(),
-        Function::Exists => todo!(),
         Function::GetFiles => todo!(),
         _ => unreachable!(),
     }
